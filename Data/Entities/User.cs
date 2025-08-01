@@ -1,6 +1,4 @@
-﻿using CompanyPortal.Consts;
-
-namespace CompanyPortal.Data.Entities
+﻿namespace CompanyPortal.Data.Entities
 {
     public class User
     {
@@ -16,6 +14,6 @@ namespace CompanyPortal.Data.Entities
 
         public Company? Company { get; set; }
 
-        public UserRole Role { get; set; } = default!;
+        public string Role { get; set; } = string.Empty;
     }
 }
