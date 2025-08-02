@@ -8,17 +8,15 @@ namespace CompanyPortal.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly ICompanySignUpService _companySignUpService;
+        private readonly IAuthService _authService;
         private readonly IOtpServcie _otpService;
         private readonly IPasswordService _passwordService;
-        private readonly ILoginService _loginService;
 
-        public AuthController(ICompanySignUpService companySignUpService, IOtpServcie otpService, IPasswordService passwordService, ILoginService loginService)
+        public AuthController(IAuthService companySignUpService, IOtpServcie otpService, IPasswordService passwordService)
         {
-            _companySignUpService = companySignUpService;
+            _authService = companySignUpService;
             _otpService = otpService;
             _passwordService = passwordService;
-            _loginService = loginService;
         }
 
         [HttpPost("CompanySignUp")]
@@ -29,7 +27,7 @@ namespace CompanyPortal.Controllers
                 return BadRequest(ModelState);
             }
 
-            var result = await _companySignUpService.SignUpAsync(dto);
+            var result = await _authService.SignUpAsync(dto);
 
             if (!result.Success)
                 return BadRequest(new { Message = result.Message! });
@@ -69,8 +67,8 @@ namespace CompanyPortal.Controllers
 
         }
 
-        [HttpGet("GetOtp/{email}")]
-        public async Task<IActionResult> GetOtpAsync(string email)
+        [HttpGet("GetOtp")]
+        public async Task<IActionResult> GetOtpAsync([FromQuery] string email)
         {
             if (string.IsNullOrEmpty(email))
             {
@@ -94,7 +92,7 @@ namespace CompanyPortal.Controllers
                 return BadRequest(ModelState);
             }
 
-            var result = await _loginService.Login(dto);
+            var result = await _authService.Login(dto);
 
             if (!result.IsAuthenticated)
             {

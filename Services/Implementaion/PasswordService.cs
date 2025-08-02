@@ -1,4 +1,5 @@
-﻿using CompanyPortal.DTOs.Auth;
+﻿using CompanyPortal.Data.Entities;
+using CompanyPortal.DTOs.Auth;
 using CompanyPortal.Repositories.Abstractions;
 using CompanyPortal.Services.Abstractions;
 using CompanyPortal.Shared;
@@ -9,10 +10,11 @@ namespace CompanyPortal.Services.Implementaion
     public class PasswordService : IPasswordService
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly PasswordHasher<object> _passwordHasher;
-        public PasswordService(IUnitOfWork unitOfWork)
+        private readonly PasswordHasher<User> _passwordHasher;
+        public PasswordService(IUnitOfWork unitOfWork, PasswordHasher<User> passwordHasher)
         {
             _unitOfWork = unitOfWork;
+            _passwordHasher = passwordHasher;
         }
         public async Task<Result> SetPasswordAsync(SetPasswordDto dto)
         {
@@ -28,7 +30,7 @@ namespace CompanyPortal.Services.Implementaion
             }
 
             // hash the password
-            var hashedPassword = _passwordHasher.HashPassword(null!, dto.Password);
+            var hashedPassword = _passwordHasher.HashPassword(user, dto.Password);
 
             // set the password
             user.PasswordHash = hashedPassword;
@@ -40,7 +42,7 @@ namespace CompanyPortal.Services.Implementaion
 
         public bool VerifyPassword(string hashedPassword, string inputPassword)
         {
-            var result = _passwordHasher.VerifyHashedPassword(null!, hashedPassword, inputPassword);
+            var result = _passwordHasher.VerifyHashedPassword(null, hashedPassword, inputPassword);
             return result == PasswordVerificationResult.Success;
         }
     }

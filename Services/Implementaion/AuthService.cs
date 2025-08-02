@@ -7,12 +7,16 @@ using CompanyPortal.Shared;
 
 namespace CompanyPortal.Services.Implementaion
 {
-    public class CompanySignUpService : ICompanySignUpService
+    public class AuthService : IAuthService
     {
         private readonly IUnitOfWork _unitOfWork;
-        public CompanySignUpService(IUnitOfWork unitOfWork)
+        private readonly IPasswordService _passwordService;
+        private readonly IJwtService _jwtService;
+        public AuthService(IUnitOfWork unitOfWork, IPasswordService passwordService, IJwtService jwtService)
         {
             _unitOfWork = unitOfWork;
+            _passwordService = passwordService;
+            _jwtService = jwtService;
         }
         public async Task<Result> SignUpAsync(CompanySignUpDto companySignUpDto)
         {
@@ -52,6 +56,52 @@ namespace CompanyPortal.Services.Implementaion
             await _unitOfWork.SaveChangesAsync();
 
             return Result.Ok("Company registered successfully. An OTP has been sent to your email for verification.");
+
+        }
+
+        public async Task<AuthResultDto> Login(LoginDto loginDto)
+        {
+            // 1. chekc if the email is registered
+            var user = await _unitOfWork.Users.FindAsync(u => u.Email == loginDto.Email);
+            if (user == null)
+            {
+                return new AuthResultDto
+                {
+                    IsAuthenticated = false,
+                    Message = "Email is not registered."
+                };
+            }
+            // 2. check if the user is verified
+            if (!user.IsVerified)
+            {
+                return new AuthResultDto
+                {
+                    IsAuthenticated = false,
+                    Message = "User is not verified. Please verify your account."
+                };
+            }
+            // 3. check if the password is correct
+            if (string.IsNullOrEmpty(user.PasswordHash) || !_passwordService.VerifyPassword(user.PasswordHash, loginDto.Password))
+            {
+                return new AuthResultDto
+                {
+                    IsAuthenticated = false,
+                    Message = "Invalid password."
+                };
+            }
+
+            // 4. generate a JWT token
+            var token = _jwtService.GenerateToken(user);
+
+            // 5. return the token and user info
+            return new AuthResultDto
+            {
+                IsAuthenticated = true,
+                JWTToken = token,
+                UserId = user.Id.ToString(),
+                Email = user.Email,
+                Role = user.Role.ToString(),
+            };
 
         }
 
