@@ -1,6 +1,7 @@
 ﻿using CompanyPortal.DTOs.Auth;
 using CompanyPortal.Repositories.Abstractions;
 using CompanyPortal.Services.Abstractions;
+using CompanyPortal.Shared;
 
 namespace CompanyPortal.Services.Implementaion
 {
@@ -11,23 +12,28 @@ namespace CompanyPortal.Services.Implementaion
         {
             _unitOfWork = unitOfWork;
         }
-        public async Task<string> GetOtpAsync(string email)
+        public async Task<Result<string>> GetOtpAsync(string email)
         {
             var user = await _unitOfWork.Users.FindAsync(u => u.Email == email);
             if (user == null)
             {
-                throw new ArgumentException("User not found");
+                return Result<string>.Fail("User not found");
             }
 
-            return user.OtpCode!;
+            return Result<string>.Ok(user.OtpCode!);
         }
 
-        public async Task<bool> VerifyOtpAsync(VerifyOtpDto verifyOtpDto)
+        public async Task<Result> VerifyOtpAsync(VerifyOtpDto verifyOtpDto)
         {
             var user = _unitOfWork.Users.Find(u => u.Email == verifyOtpDto.Email);
             if (user == null)
             {
-                throw new ArgumentException("User not found");
+                return Result.Fail("User not found");
+            }
+
+            if (user.OtpExpiresAt == null || DateTime.UtcNow > user.OtpExpiresAt)
+            {
+                return Result.Fail("OTP has expired. Please request a new OTP.");
             }
 
             if (user.OtpCode == verifyOtpDto.Otp)
@@ -35,11 +41,11 @@ namespace CompanyPortal.Services.Implementaion
                 user.IsVerified = true;
                 _unitOfWork.Users.Update(user);
                 await _unitOfWork.SaveChangesAsync();
-                return true;
+                return Result.Ok("User is verified");
             }
             else
             {
-                return false;
+                return Result.Fail("The OTP entered is not correct");
             }
         }
     }

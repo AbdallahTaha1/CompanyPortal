@@ -1,6 +1,7 @@
 ﻿using CompanyPortal.DTOs.Auth;
 using CompanyPortal.Repositories.Abstractions;
 using CompanyPortal.Services.Abstractions;
+using CompanyPortal.Shared;
 using Microsoft.AspNetCore.Identity;
 
 namespace CompanyPortal.Services.Implementaion
@@ -13,31 +14,33 @@ namespace CompanyPortal.Services.Implementaion
         {
             _unitOfWork = unitOfWork;
         }
-        public async Task SetPasswordAsync(SetPasswordDto dto)
+        public async Task<Result> SetPasswordAsync(SetPasswordDto dto)
         {
             var user = _unitOfWork.Users.Find(u => u.Email == dto.Email);
             if (user == null)
             {
-                throw new ArgumentException("User not found");
+                return Result.Fail("User not found");
             }
 
             if (!user.IsVerified)
             {
-                throw new InvalidOperationException("User is not verified");
+                return Result.Fail("User is not verified");
             }
 
             // hash the password
-            var hashedPassword = _passwordHasher.HashPassword(null, dto.Password);
+            var hashedPassword = _passwordHasher.HashPassword(null!, dto.Password);
 
             // set the password
             user.PasswordHash = hashedPassword;
             _unitOfWork.Users.Update(user);
             await _unitOfWork.SaveChangesAsync();
+
+            return Result.Ok("Password set successfully");
         }
 
         public bool VerifyPassword(string hashedPassword, string inputPassword)
         {
-            var result = _passwordHasher.VerifyHashedPassword(null, hashedPassword, inputPassword);
+            var result = _passwordHasher.VerifyHashedPassword(null!, hashedPassword, inputPassword);
             return result == PasswordVerificationResult.Success;
         }
     }

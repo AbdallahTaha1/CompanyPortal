@@ -3,6 +3,7 @@ using CompanyPortal.Data.Entities;
 using CompanyPortal.DTOs.Auth;
 using CompanyPortal.Repositories.Abstractions;
 using CompanyPortal.Services.Abstractions;
+using CompanyPortal.Shared;
 
 namespace CompanyPortal.Services.Implementaion
 {
@@ -13,12 +14,12 @@ namespace CompanyPortal.Services.Implementaion
         {
             _unitOfWork = unitOfWork;
         }
-        public async Task SignUpAsync(CompanySignUpDto companySignUpDto)
+        public async Task<Result> SignUpAsync(CompanySignUpDto companySignUpDto)
         {
             // 1. Validate email not already registered
             var existingUser = await _unitOfWork.Users.FindAsync(c => c.Email == companySignUpDto.Email);
             if (existingUser is not null)
-                throw new Exception("Email is already in use.");
+                return Result.Fail("Email is already registered.");
 
             // 2. Create new user
             var newUser = new User
@@ -27,7 +28,7 @@ namespace CompanyPortal.Services.Implementaion
                 Email = companySignUpDto.Email,
                 Role = UserRole.Company,
                 OtpCode = GenerateOtp(),
-                OtpGeneratedAt = DateTime.UtcNow,
+                OtpExpiresAt = DateTime.UtcNow.AddDays(1),
                 IsVerified = false
             };
 
@@ -49,6 +50,8 @@ namespace CompanyPortal.Services.Implementaion
 
             // 4. Save changes
             await _unitOfWork.SaveChangesAsync();
+
+            return Result.Ok("Company registered successfully. An OTP has been sent to your email for verification.");
 
         }
 

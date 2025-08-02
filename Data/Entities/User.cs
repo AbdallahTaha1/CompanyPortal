@@ -9,7 +9,7 @@
 
         // OTP
         public string? OtpCode { get; set; }
-        public DateTime? OtpGeneratedAt { get; set; }
+        public DateTime? OtpExpiresAt { get; set; }
         public bool IsVerified { get; set; } = false;
 
         public Company? Company { get; set; }
