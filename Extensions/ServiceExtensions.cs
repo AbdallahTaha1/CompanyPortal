@@ -41,6 +41,7 @@ namespace CompanyPortal.Extentions
             services.AddScoped<IPasswordService, PasswordService>();
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<ICompanyService, CompanyService>();
+            services.AddScoped<IImageService, ImageService>();
 
             services.AddScoped<PasswordHasher<User>>();
 

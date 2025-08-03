@@ -20,7 +20,7 @@ namespace CompanyPortal.Controllers
         }
 
         [HttpPost("CompanySignUp")]
-        public async Task<IActionResult> CompanySignUpAsync(CompanySignUpDto dto)
+        public async Task<IActionResult> CompanySignUpAsync([FromForm] CompanySignUpDto dto)
         {
             if (!ModelState.IsValid)
             {

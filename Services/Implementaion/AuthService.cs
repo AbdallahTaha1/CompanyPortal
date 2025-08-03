@@ -12,11 +12,13 @@ namespace CompanyPortal.Services.Implementaion
         private readonly IUnitOfWork _unitOfWork;
         private readonly IPasswordService _passwordService;
         private readonly IJwtService _jwtService;
-        public AuthService(IUnitOfWork unitOfWork, IPasswordService passwordService, IJwtService jwtService)
+        private readonly IImageService _imageService;
+        public AuthService(IUnitOfWork unitOfWork, IPasswordService passwordService, IJwtService jwtService, IImageService imageService)
         {
             _unitOfWork = unitOfWork;
             _passwordService = passwordService;
             _jwtService = jwtService;
+            _imageService = imageService;
         }
         public async Task<Result> SignUpAsync(CompanySignUpDto companySignUpDto)
         {
@@ -39,13 +41,24 @@ namespace CompanyPortal.Services.Implementaion
             await _unitOfWork.Users.AddAsync(newUser);
 
             // 3. Create new company
+            string? logoUrl = null;
+            if (companySignUpDto.Logo != null)
+            {
+                // Save the logo image and get the URL
+                var Url = await _imageService.SaveImageAsync(companySignUpDto.Logo, "Uplaods/logos");
+                if (string.IsNullOrEmpty(Url))
+                {
+                    return Result.Fail("Failed to upload logo image.");
+                }
+                logoUrl = Url;
+            }
             var newCompany = new Company
             {
                 Id = Guid.NewGuid(),
                 ArabicName = companySignUpDto.ArabicName,
                 EnglishName = companySignUpDto.EnglishName,
                 PhoneNumber = companySignUpDto.PhoneNumber,
-                LogoUrl = companySignUpDto.LogoUrl,
+                LogoUrl = logoUrl,
                 WebsiteUrl = companySignUpDto.WebsiteUrl,
                 UserId = newUser.Id
             };

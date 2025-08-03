@@ -7,6 +7,6 @@
         public string Email { get; set; } = string.Empty;
         public string? PhoneNumber { get; set; }
         public string? WebsiteUrl { get; set; }
-        public string? LogoUrl { get; set; }
+        public IFormFile? Logo { get; set; }
     }
 }

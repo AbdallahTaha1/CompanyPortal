@@ -25,9 +25,31 @@ namespace CompanyPortal.Validators
             RuleFor(x => x.WebsiteUrl)
                 .MaximumLength(300).WithMessage("Website URL cannot exceed 300 characters.");
 
-            RuleFor(x => x.LogoUrl)
-                .MaximumLength(300).WithMessage("Logo URL cannot exceed 300 characters.");
+            RuleFor(x => x.Logo)
+               .Must(IsValidImageFile!)
+               .WithMessage("Logo must be a valid image file (JPEG or PNG).")
+               .Must(IsValidImageSize!)
+               .WithMessage("Logo file size must not exceed 1 MB.");
         }
+        private bool IsValidImageFile(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return true;
+
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+
+            return allowedExtensions.Contains(extension);
+        }
+        private bool IsValidImageSize(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return true;
+
+            const int maxFileSizeInBytes = 1 * 1024 * 1024; // 1 MB
+            return file.Length <= maxFileSizeInBytes;
+        }
+
     }
 
 }
