@@ -44,7 +44,7 @@ namespace CompanyPortal.Services.Implementaion
             if (string.IsNullOrEmpty(filePath))
                 return false;
 
-            var fullPath = Path.Combine(_env.WebRootPath, filePath.TrimStart('/'));
+            var fullPath = Path.Combine(_env.WebRootPath ?? Directory.GetCurrentDirectory(), filePath.TrimStart('/'));
 
             if (File.Exists(fullPath))
             {

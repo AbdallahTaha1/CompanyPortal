@@ -118,7 +118,7 @@ namespace CompanyPortal.Extentions
         public static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
         {
             var connectionString = configuration.GetConnectionString("DefaultConnection") ??
-       throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+                    throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
 
             services.AddDbContext<AppDbContext>(options =>
@@ -126,6 +126,22 @@ namespace CompanyPortal.Extentions
 
             return services;
         }
+        public static IServiceCollection AddCorsServices(this IServiceCollection services)
+        {
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAngularApp", policy =>
+                {
+                    policy
+                        .AllowAnyOrigin()        // Allow all origins
+                        .AllowAnyMethod()        // Allow all HTTP methods (GET, POST, etc.)
+                        .AllowAnyHeader();       // Allow all headers
+                });
+            });
+
+            return services;
+        }
+
 
     }
 }

@@ -45,7 +45,7 @@ namespace CompanyPortal.Services.Implementaion
             if (companySignUpDto.Logo != null)
             {
                 // Save the logo image and get the URL
-                var Url = await _imageService.SaveImageAsync(companySignUpDto.Logo, "Uplaods/logos");
+                var Url = await _imageService.SaveImageAsync(companySignUpDto.Logo, "Uploads/logos");
                 if (string.IsNullOrEmpty(Url))
                 {
                     return Result.Fail("Failed to upload logo image.");
